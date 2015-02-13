@@ -6,9 +6,9 @@ use Yii;
 use yii\web\UploadedFile;
 use yii\imagine\Image;
 use yii\db\ActiveRecord;
-use dosamigos\transliterator\TransliteratorHelper;
 use johnb0\gallery\Module;
 use johnb0\gallery\traits\ModuleTrait;
+use yii\helpers\Inflector;
 
 /**
  * This is the model class for table "gallery_photo".
@@ -100,9 +100,10 @@ class GalleryPhoto extends ActiveRecord
      */
     public function saveUploadedFile()
     {        
-        $nameTranslit = preg_replace('/(?:[^-a-z0-9]|(?<=-)-+)/i', '_', str_replace(" ", "_", trim(TransliteratorHelper::process($this->gallery->name, ''))));
+        
+        $folderName = $this->makeValidName($this->gallery->name) . "_" . $this->gallery->id;
         $imagePath = Yii::getAlias($this->module->imagePath);
-        $absolutePath = "$imagePath/$nameTranslit";
+        $absolutePath = $imagePath . DIRECTORY_SEPARATOR . $folderName;
 
         // create actual directory structure 
         if (!file_exists($absolutePath)) {
@@ -112,19 +113,18 @@ class GalleryPhoto extends ActiveRecord
         // get file instance
         $this->file = UploadedFile::getInstance($this, 'file');
         $filename = uniqid($this->gallery_id) . '.' . $this->file->extension; 
-//        $url = "$structure/$filename";
 
         // checks for existing url in db
-        if (self::findByUrl($nameTranslit, $filename)) {
+        if (self::findByUrl($folderName, $filename)) {
             return false;
         }
 
         // save original uploaded file
-        $this->file->saveAs("$absolutePath/$filename");
+        $this->file->saveAs($absolutePath . DIRECTORY_SEPARATOR . $filename);
         $this->filename = $filename;
         $this->type = $this->file->type;
         $this->size = $this->file->size;
-        $this->dirname = $nameTranslit;
+        $this->dirname = $folderName;
 
         return $this->save();        
     }
@@ -387,5 +387,10 @@ class GalleryPhoto extends ActiveRecord
     public function getUrl()
     {
         return \Yii::$app->getModule('gallery')->imageUrl . "/" . $this->getFilePath();
+    }
+    
+    public function makeValidName($name)
+    {
+        return Inflector::slug($name, '-', true);
     }
 }
