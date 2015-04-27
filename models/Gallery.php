@@ -59,6 +59,14 @@ class Gallery extends \yii\db\ActiveRecord
     {
         return $this->hasMany(GalleryPhoto::className(), ['gallery_id' => 'id']);
     }
+
+    public function getPhotosArray()
+    {
+        $photos = GalleryPhoto::find()
+                ->where(['gallery_id' => $this->id])
+                ->all();
+        return $photos;
+    }
     
     public function getGalleryStatus() 
     {
