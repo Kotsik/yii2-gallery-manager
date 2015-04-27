@@ -223,9 +223,14 @@ class GalleryPhoto extends ActiveRecord
      */
     public function getDefaultThumbUrl($baseUrl = '')
     {
-        if ($this->isImage())           
-            return Yii::$app->getModule('gallery')->imageUrl ."/" . $this->dirname . "/" . $this->getDefaultThumb();
-        
+        if ($this->isImage()) {
+            $thumbsArray = $this->getThumbs();
+            if(Yii::$app->getModule('gallery')->defaultUsedThumb && $thumbsArray && array_key_exists(Yii::$app->getModule('gallery')->defaultUsedThumb, $thumbsArray)) {
+                return $this->getThumbUrl(Yii::$app->getModule('gallery')->defaultUsedThumb);
+            } else {
+                return Yii::$app->getModule('gallery')->imageUrl ."/" . $this->dirname . "/" . $this->getDefaultThumb();
+            }
+        }
         return "$baseUrl/images/file.png";
     }
     
@@ -392,5 +397,20 @@ class GalleryPhoto extends ActiveRecord
     public function makeValidName($name)
     {
         return Inflector::slug($name, '-', true);
+    }
+    
+    public function fields() {
+        return [
+            'id',
+            'name',
+            'description',
+            'alt',
+            'image' => function($model) {
+                return \Yii::$app->params['domainName'] . $model->getUrl();
+            },
+            'thumb' => function($model) {
+                return \Yii::$app->params['domainName'] . $model->getDefaultThumbUrl();
+            }
+        ];
     }
 }

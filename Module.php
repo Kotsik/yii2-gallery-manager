@@ -38,6 +38,11 @@ class Module extends \yii\base\Module
     ];
     
     /**
+     * @var string defaultUsedThumb name of thumb that will be by default. If not exists, defaultThumbSize will be used
+     */
+    public $defaultUsedThumb;
+    
+    /**
      * @var array default thumbnail size, using in filemanager view.
      */
     private static $defaultThumbSize = [128, 128];
