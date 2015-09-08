@@ -311,10 +311,14 @@ class GalleryPhoto extends ActiveRecord
         $imagePath = Yii::getAlias($this->module->imagePath);
 
         foreach ($this->getThumbs() as $thumbUrl) {
-            unlink("$imagePath/{$this->dirname}/$thumbUrl");
+            if (file_exists("$imagePath/{$this->dirname}/$thumbUrl")) {
+                unlink("$imagePath/{$this->dirname}/$thumbUrl");
+            }
         }
 
-        unlink("$imagePath/{$this->dirname}/{$this->getDefaultThumb()}");
+        if (file_exists("$imagePath/{$this->dirname}/{$this->getDefaultThumb()}")) {
+            unlink("$imagePath/{$this->dirname}/{$this->getDefaultThumb()}");
+        }
     }
 
     /**
